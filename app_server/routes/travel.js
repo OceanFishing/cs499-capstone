@@ -1,8 +1,8 @@
-var express = require('express');
-var router = express.Router();
-var controller = require('../controllers/travel');
+const express = require('express');
+const router = express.Router();
+const travelController = require('../controllers/travel'); // import travel controller
 
-/* GET travel page. */
-router.get('/', controller.travel);
+/* Map GET /travel to the travel controller */
+router.get('/', travelController.travel);
 
 module.exports = router;
