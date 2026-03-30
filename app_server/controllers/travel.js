@@ -3,7 +3,7 @@ const path = require('path'); // Node built-in path utility
 
 /* Read trips from the JSON data file */
 const tripsData = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '../data/trips.json'), 'utf8')
+  fs.readFileSync(path.join(__dirname, '../../data/trips.json'), 'utf8')
 );
 
 /* GET travel page - passes trips array to HBS view */
