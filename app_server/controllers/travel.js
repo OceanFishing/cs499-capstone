@@ -1,14 +1,30 @@
-const fs = require('fs'); // Node built-in filesystem module
-const path = require('path'); // Node built-in path utility
+const http = require('http'); // Node built-in HTTP module
 
-/* Read trips from the JSON data file */
-const tripsData = JSON.parse(
-  fs.readFileSync(path.join(__dirname, '../../data/trips.json'), 'utf8')
-);
+/* Build options for the internal API request */
+const requestOptions = {
+  hostname: 'localhost',
+  port: 3000,
+  path: '/api/trips',
+  method: 'GET'
+};
 
-/* GET travel page - passes trips array to HBS view */
+/* GET travel page - fetches trips from REST API and passes to HBS view */
 const travel = (req, res) => {
-  res.render('travel', { title: 'Travlr Getaways', trips: tripsData });
+  const apiReq = http.request(requestOptions, (apiRes) => {
+    let body = '';
+    // Accumulate response chunks
+    apiRes.on('data', (chunk) => body += chunk);
+    apiRes.on('end', () => {
+      res.render('travel', {
+        title: 'Travlr Getaways',
+        trips: JSON.parse(body)
+      });
+    });
+  });
+
+  // Log any connection errors to the API
+  apiReq.on('error', (err) => console.log('API request error: ', err));
+  apiReq.end();
 };
 
 module.exports = { travel };
