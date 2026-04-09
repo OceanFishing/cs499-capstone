@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-// Trip model registered by db.js on startup
 const Trip = mongoose.model('trips');
 
 /* GET /api/trips -- returns all trips */
@@ -28,4 +27,54 @@ const tripsFindByCode = async (req, res) => {
   }
 };
 
-module.exports = { tripsList, tripsFindByCode };
+/* POST /api/trips -- adds a new trip */
+const tripsAddTrip = async (req, res) => {
+  try {
+    const newTrip = new Trip({
+      code: req.body.code,
+      name: req.body.name,
+      length: req.body.length,
+      start: req.body.start,
+      resort: req.body.resort,
+      perPerson: req.body.perPerson,
+      image: req.body.image,
+      description: req.body.description
+    });
+    const q = await newTrip.save();
+    if (!q) {
+      return res.status(400).json(err);
+    } else {
+      return res.status(201).json(q);
+    }
+  } catch (err) {
+    return res.status(400).json(err);
+  }
+};
+
+/* PUT /api/trips/:tripCode -- updates a single trip */
+const tripsUpdateTrip = async (req, res) => {
+  console.log(req.params);
+  console.log(req.body);
+  const q = await Trip
+    .findOneAndUpdate(
+      { 'code': req.params.tripCode },
+      {
+        code: req.body.code,
+        name: req.body.name,
+        length: req.body.length,
+        start: req.body.start,
+        resort: req.body.resort,
+        perPerson: req.body.perPerson,
+        image: req.body.image,
+        description: req.body.description
+      }
+    )
+    .exec();
+  if (!q) {
+    return res.status(400).json(err);
+  } else {
+    return res.status(201).json(q);
+  }
+};
+
+module.exports = { tripsList, tripsFindByCode, tripsAddTrip, tripsUpdateTrip };

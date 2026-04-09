@@ -27,4 +27,29 @@ const travel = (req, res) => {
   apiReq.end();
 };
 
-module.exports = { travel };
+/* GET individual trip page - fetches single trip from REST API by tripCode */
+const travelDetail = (req, res) => {
+  const options = {
+    hostname: 'localhost',
+    port: 3000,
+    path: '/api/trips/' + req.params.tripCode,
+    method: 'GET'
+  };
+
+  const apiReq = http.request(options, (apiRes) => {
+    let body = '';
+    apiRes.on('data', (chunk) => body += chunk);
+    apiRes.on('end', () => {
+      res.render('travel', {
+        title: 'Travlr Getaways',
+        trips: JSON.parse(body),
+        singleTrip: true
+      });
+    });
+  });
+
+  apiReq.on('error', (err) => console.log('API request error: ', err));
+  apiReq.end();
+};
+
+module.exports = { travel, travelDetail };

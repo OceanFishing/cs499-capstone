@@ -1,13 +1,16 @@
 const express = require('express');
 const router = express.Router();
 
-// Import controller functions for trip-related endpoints
 const tripsController = require('../controllers/trips');
 
-// Route: GET all trips
-router.get('/trips', tripsController.tripsList);
+// GET and POST for the trips collection
+router.route('/trips')
+  .get(tripsController.tripsList)
+  .post(tripsController.tripsAddTrip);
 
-// Route: GET a specific trip by its tripCode parameter
-router.get('/trips/:tripCode', tripsController.tripsFindByCode);
+// GET and PUT for a specific trip by tripCode
+router.route('/trips/:tripCode')
+  .get(tripsController.tripsFindByCode)
+  .put(tripsController.tripsUpdateTrip);
 
 module.exports = router;
