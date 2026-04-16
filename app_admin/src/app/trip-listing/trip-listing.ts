@@ -3,53 +3,61 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { TripCardComponent } from '../trip-card/trip-card';
 import { TripDataService } from '../services/trip-data';
+import { AuthenticationService } from '../services/authentication.service';
 import { Trip } from '../models/trip';
 
 @Component({
-  selector: 'app-trip-listing',
-  standalone: true,
-  imports: [CommonModule, TripCardComponent],
-  templateUrl: './trip-listing.html',
-  styleUrl: './trip-listing.css',
-  providers: [TripDataService]
+    selector: 'app-trip-listing',
+    standalone: true,
+    imports: [CommonModule, TripCardComponent],
+    templateUrl: './trip-listing.html',
+    styleUrl: './trip-listing.css',
+    providers: [TripDataService]
 })
 export class TripListingComponent implements OnInit {
-  trips: Trip[] = [];
-  message: string = '';
 
-  constructor(
-    private tripDataService: TripDataService,
-    private router: Router,
-    private cdr: ChangeDetectorRef
-  ) {
-    console.log('trip-listing constructor');
-  }
+    trips: Trip[] = [];
+    message: string = '';
 
-  private getStuff(): void {
-    this.tripDataService.getTrips()
-      .subscribe({
-        next: (value: any) => {
-          this.trips = value;
-          if(value.length > 0) {
-            this.message = 'There are ' + value.length + ' trips available.';
-          } else {
-            this.message = 'There were no trips retrieved from the database';
-          }
-          console.log(this.message);
-          this.cdr.detectChanges();
-        },
-        error: (error: any) => {
-          console.log('Error: ' + error);
-        }
-      });
-  }
+    constructor(
+        private tripDataService: TripDataService,
+        private authenticationService: AuthenticationService,
+        private router: Router,
+        private cdr: ChangeDetectorRef
+    ) {
+        console.log('trip-listing constructor');
+    }
 
-  public addTrip(): void {
-    this.router.navigate(['add-trip']);
-  }
+    /* GET trips from the API and set message based on result */
+    private getStuff(): void {
+        this.tripDataService.getTrips()
+            .subscribe({
+                next: (value: any) => {
+                    this.trips = value;
+                    if (value.length > 0) {
+                        this.message = 'There are ' + value.length + ' trips available.';
+                    } else {
+                        this.message = 'No trips found.';
+                    }
+                    this.cdr.detectChanges();
+                },
+                error: (error: any) => {
+                    console.log('Error: ' + error);
+                }
+            });
+    }
 
-  ngOnInit(): void {
-    console.log('ngOnInit');
-    this.getStuff();
-  }
+    /* Navigates to the add-trip route */
+    addTrip(): void {
+        this.router.navigate(['add-trip']);
+    }
+
+    /* Delegates login state check to AuthenticationService */
+    public isLoggedIn(): boolean {
+        return this.authenticationService.isLoggedIn();
+    }
+
+    ngOnInit(): void {
+        this.getStuff();
+    }
 }

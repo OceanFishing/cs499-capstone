@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -21,7 +21,8 @@ export class EditTrip implements OnInit {
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
-    private tripDataService: TripDataService
+    private tripDataService: TripDataService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -51,11 +52,25 @@ export class EditTrip implements OnInit {
       .subscribe({
         next: (value: any) => {
           this.trip = value;
-          this.editForm.patchValue(value[0]);
-          if(!value) {
+          if (!value) {
             this.message = 'No Trip Retrieved!';
           } else {
             this.message = 'Trip: ' + tripCode + ' retrieved';
+            setTimeout(() => {
+              const t = value;
+              this.editForm.patchValue({
+                _id: t._id,
+                code: t.code,
+                name: t.name,
+                length: t.length,
+                start: t.start ? new Date(t.start).toISOString().substring(0, 10) : '',
+                resort: t.resort,
+                perPerson: t.perPerson,
+                image: t.image,
+                description: t.description
+              });
+              this.cdr.detectChanges();
+            }, 200);
           }
           console.log(this.message);
         },
@@ -67,7 +82,7 @@ export class EditTrip implements OnInit {
 
   public onSubmit() {
     this.submitted = true;
-    if(this.editForm.valid) {
+    if (this.editForm.valid) {
       this.tripDataService.updateTrip(this.editForm.value)
         .subscribe({
           next: (value: any) => {
