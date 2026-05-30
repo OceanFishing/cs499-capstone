@@ -66,3 +66,5 @@ typings/
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+
+__pycache__/
