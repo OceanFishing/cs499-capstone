@@ -7,7 +7,7 @@ class Trip(BaseModel):
 	length: str
 	start: date
 	resort: str
-	perPerson: str
+	perPerson: float
 	image: str
 	description: str
 	
