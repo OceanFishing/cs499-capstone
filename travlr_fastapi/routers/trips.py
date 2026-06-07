@@ -20,7 +20,7 @@ async def trips_list():
 
         for trip in trips_list:
             # MongoDB returns _id as an ObjectId type which FastAPI cannot serialize to JSON
-            # Must be converted to string before returning the respone
+            # Must be converted to string before returning the response
             trip["_id"] = str(trip["_id"])
     except Exception as e:
         raise HTTPException(status_code=500, detail="Query unable to be performed")
@@ -60,7 +60,7 @@ async def authenticate_jwt(authorization: str = Header(None)):
 async def add_trip(trip: Trip, payload=Depends(authenticate_jwt)):
     try:
         trip_data = trip.model_dump()
-        # pymongo cannot enocde Python's datetime.date type directly
+        # pymongo cannot encode Python's datetime.date type directly
         # must convert to string before insert or update or the operation will fail
         trip_data["start"] = str(trip_data["start"])
 

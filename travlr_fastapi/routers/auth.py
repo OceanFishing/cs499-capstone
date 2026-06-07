@@ -7,11 +7,15 @@ from dotenv import load_dotenv
 import hashlib
 import secrets
 
+load_dotenv()
 router = APIRouter()
 users_collection = db["users"]
 
 def set_password(password):
 	salt = secrets.token_hex(16)
+	# Algorithm, iteration count (1000), and key length (64) match the original
+	# Node.js crypto.pbkdf2Sync call exactly. This is intentional for compatibility
+	# with passwords hashed by the original implementation
 	hash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), salt.encode('utf-8'), 1000, 64).hex()
 	
 	return salt, hash
@@ -43,6 +47,8 @@ async def register(user: User):
 		elif current_user is None:
 			new_password = user.password
 			salt, hash = set_password(new_password)
+			# Pydantic models are immutable by default. ConfigDict(frozen=False) on the
+			# User model allows these field assignments before the document is inserted
 			user.hash = hash
 			user.salt = salt
 				
