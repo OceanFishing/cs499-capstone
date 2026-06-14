@@ -1,13 +1,14 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 class User(BaseModel):
-	email: str 
+	email: str
 	name: str
 	hash: str
 	salt: str
 	password: str
-	# frozen=False is required to allow field assignment after instantiation.
-	# Without this, setting user.hash and user.salt in auth.py will raise a
-	# ValidationError at runtime.
-	model_config = ConfigDict(frozen=False)
-	
+
+class Credentials(BaseModel):
+	# Login needs only an email and password, which is what the Angular admin
+	# sends, so login validates against this rather than the full User model.
+	email: str
+	password: str

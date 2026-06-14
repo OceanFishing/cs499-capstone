@@ -10,5 +10,3 @@ class Trip(BaseModel):
 	perPerson: float
 	image: str
 	description: str
-	
-	

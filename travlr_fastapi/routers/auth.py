@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from models.user import User
+from models.user import User, Credentials
+from datetime import datetime, timedelta, timezone
 import database
 import jwt
 import os
@@ -27,9 +28,15 @@ def validate_password(password, salt, hash):
 	elif hash != computed_hash:
 		return False
 
-def generate_jwt(user):
+def generate_jwt(email, name):
 	secret = os.getenv("JWT_SECRET")
-	payload = {"email": user.email, "name": user.name}
+	# The expiry matches the original Node token (expiresIn '1h'). The Angular
+	# client reads exp to decide whether the session is still valid.
+	payload = {
+		"email": email,
+		"name": name,
+		"exp": datetime.now(timezone.utc) + timedelta(hours=1),
+	}
 	token = jwt.encode(payload, secret, algorithm="HS256")
 
 	return token
@@ -58,17 +65,15 @@ async def register(user: User):
 	if new_id is None:
 		raise HTTPException(status_code=500, detail="Registration failed")
 
-	# Set on the model before signing so the token reflects the stored record.
-	user.hash = hash
-	user.salt = salt
-	token = generate_jwt(user)
-
-	return token
+	# Wrapped in an object because the Angular client reads response.token.
+	return {"token": generate_jwt(user.email, user.name)}
 
 @router.post("/api/login")
-async def login(user: User):
+async def login(credentials: Credentials):
 	try:
-		row = await database.pool.fetchrow("SELECT salt, hash FROM users WHERE email = $1", user.email)
+		row = await database.pool.fetchrow(
+			"SELECT name, salt, hash FROM users WHERE email = $1", credentials.email
+		)
 	except Exception:
 		raise HTTPException(status_code=500, detail="Login Failure")
 
@@ -76,7 +81,8 @@ async def login(user: User):
 	if row is None:
 		raise HTTPException(status_code=401, detail="User not found")
 
-	if validate_password(user.password, row["salt"], row["hash"]) is False:
+	if validate_password(credentials.password, row["salt"], row["hash"]) is False:
 		raise HTTPException(status_code=401, detail="Incorrect password")
 
-	return generate_jwt(user)
+	# Wrapped in an object because the Angular client reads response.token.
+	return {"token": generate_jwt(credentials.email, row["name"])}
